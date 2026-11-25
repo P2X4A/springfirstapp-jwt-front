@@ -1,0 +1,8 @@
+body {
+  background-color: #f6f7fb;
+}
+
+/* Tarjeta centrada de login y registro. */
+.auth-card {
+  max-width: 440px;
+}
