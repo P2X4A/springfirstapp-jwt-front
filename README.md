@@ -1,7 +1,10 @@
 # SpringFirstApp JWT · Front Angular
 
-Front mínimo en Angular 22 (**NgModules, sin standalone**) que consume el back `SpringFirstAppJWT`
-(Spring Boot 3 + JWT) desplegado en Tomcat.
+Front mínimo en Angular 22 (**NgModules, sin standalone**) que consume el back
+[`SpringFirstAppJWT`](https://github.com/P2X4A/SpringFirstAppJWT) (Spring Boot 3 + JWT) desplegado en Tomcat.
+
+Proyecto académico de Ingeniería de Sistemas, Universidad El Bosque. Pantallas: inicio de sesión, registro y
+gestión de usuarios con permisos por rol (USER / ADMIN).
 
 ## Configurar la URL del back
 
