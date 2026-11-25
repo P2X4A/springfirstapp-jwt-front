@@ -1,0 +1,247 @@
+<section class="container py-4" aria-labelledby="titulo-usuarios">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div>
+      <h1 class="h3 fw-bold mb-1" id="titulo-usuarios">
+        <i class="fa-solid fa-users me-2" aria-hidden="true"></i>Usuarios
+      </h1>
+      <p class="text-body-secondary mb-0">
+        @if (total() !== null) {
+          Total registrados: <strong>{{ total() }}</strong> ·
+        }
+        Tu rol: <span class="badge text-bg-secondary">{{ auth.session()?.role ?? 'SIN ROL' }}</span>
+      </p>
+    </div>
+    <button type="button" class="btn btn-outline-primary" (click)="cargar()" [disabled]="cargando()">
+      <i class="fa-solid fa-rotate me-1" aria-hidden="true"></i>Recargar
+    </button>
+  </div>
+
+  <div aria-live="polite">
+    @if (mensaje()) {
+      <div class="alert alert-success" role="status">
+        <i class="fa-solid fa-circle-check me-2" aria-hidden="true"></i>{{ mensaje() }}
+      </div>
+    }
+  </div>
+  @if (error()) {
+    <div class="alert alert-danger" role="alert">
+      <i class="fa-solid fa-circle-exclamation me-2" aria-hidden="true"></i>{{ error() }}
+    </div>
+  }
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h2 class="h5 fw-semibold">Consultar por ID</h2>
+      <form [formGroup]="consulta" (ngSubmit)="buscarPorId()" class="row g-2 align-items-end" novalidate>
+        <div class="col-sm-5 col-md-3">
+          <label for="consulta-id" class="form-label">ID de usuario</label>
+          <input
+            id="consulta-id"
+            type="number"
+            min="1"
+            class="form-control"
+            formControlName="id"
+            [class.is-invalid]="consulta.controls.id.touched && consulta.controls.id.invalid"
+          />
+          <div class="invalid-feedback">Ingresa un ID mayor a 0.</div>
+        </div>
+        <div class="col-auto d-flex gap-2">
+          <button type="submit" class="btn btn-primary" [disabled]="consultando()">
+            <i class="fa-solid fa-magnifying-glass me-1" aria-hidden="true"></i>Buscar
+          </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            (click)="verificarExiste()"
+            [disabled]="consultando()"
+          >
+            ¿Existe?
+          </button>
+        </div>
+      </form>
+      <div aria-live="polite">
+        @if (resultadoConsulta()) {
+          <div class="alert alert-info mt-3 mb-0" role="status">{{ resultadoConsulta() }}</div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (auth.isAdmin()) {
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h2 class="h5 fw-semibold">
+          @if (editandoId() === null) {
+            Crear usuario
+          } @else {
+            Editar usuario #{{ editandoId() }}
+          }
+        </h2>
+        <form [formGroup]="formulario" (ngSubmit)="guardar()" class="row g-3" novalidate>
+          <div class="col-md-4">
+            <label for="usuario-username" class="form-label">Usuario</label>
+            <input
+              id="usuario-username"
+              class="form-control"
+              formControlName="username"
+              autocomplete="off"
+              [class.is-invalid]="formulario.controls.username.touched && formulario.controls.username.invalid"
+            />
+            <div class="invalid-feedback">Obligatorio (máximo 50 caracteres).</div>
+          </div>
+          <div class="col-md-4">
+            <label for="usuario-password" class="form-label">Contraseña</label>
+            <input
+              id="usuario-password"
+              type="password"
+              class="form-control"
+              formControlName="password"
+              autocomplete="new-password"
+              [class.is-invalid]="formulario.controls.password.touched && formulario.controls.password.invalid"
+            />
+            <div class="invalid-feedback">Mínimo 8 caracteres.</div>
+          </div>
+          <div class="col-md-4">
+            <label for="usuario-rol" class="form-label">Rol</label>
+            <select id="usuario-rol" class="form-select" formControlName="role">
+              @for (rol of roles; track rol) {
+                <option [value]="rol">{{ rol }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label for="usuario-edad" class="form-label">Edad</label>
+            <input
+              id="usuario-edad"
+              type="number"
+              min="0"
+              max="120"
+              class="form-control"
+              formControlName="userAge"
+              [class.is-invalid]="formulario.controls.userAge.touched && formulario.controls.userAge.invalid"
+            />
+            <div class="invalid-feedback">Ingresa una edad entre 0 y 120.</div>
+          </div>
+          <div class="col-md-4">
+            <label for="usuario-nacimiento" class="form-label">Fecha de nacimiento</label>
+            <input
+              id="usuario-nacimiento"
+              type="date"
+              class="form-control"
+              formControlName="dateOfBirth"
+              [class.is-invalid]="formulario.controls.dateOfBirth.touched && formulario.controls.dateOfBirth.invalid"
+            />
+            <div class="invalid-feedback">La fecha es obligatoria.</div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end gap-2">
+            <button type="submit" class="btn btn-success flex-fill" [disabled]="guardando()">
+              @if (guardando()) {
+                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              }
+              {{ editandoId() === null ? 'Crear' : 'Guardar cambios' }}
+            </button>
+            @if (editandoId() !== null) {
+              <button type="button" class="btn btn-outline-secondary" (click)="cancelarEdicion()">
+                Cancelar
+              </button>
+            }
+          </div>
+          @if (editandoId() !== null) {
+            <div class="col-12">
+              <div class="form-text">
+                El back vuelve a cifrar la contraseña en cada edición (por eso es obligatoria) y
+                rechaza el cambio si el nombre de usuario no cambia.
+              </div>
+            </div>
+          }
+        </form>
+
+        <hr />
+
+        <form [formGroup]="eliminarNombre" (ngSubmit)="eliminarPorNombre()" class="row g-2 align-items-end" novalidate>
+          <div class="col-sm-8 col-md-5">
+            <label for="eliminar-nombre" class="form-label">Eliminar por nombre de usuario</label>
+            <input
+              id="eliminar-nombre"
+              class="form-control"
+              formControlName="nombre"
+              autocomplete="off"
+              [class.is-invalid]="eliminarNombre.controls.nombre.touched && eliminarNombre.controls.nombre.invalid"
+            />
+            <div class="invalid-feedback">Escribe el nombre de usuario.</div>
+          </div>
+          <div class="col-auto">
+            <button type="submit" class="btn btn-outline-danger" [disabled]="guardando()">
+              <i class="fa-solid fa-trash me-1" aria-hidden="true"></i>Eliminar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (cargando()) {
+    <div class="d-flex align-items-center gap-2 text-body-secondary" role="status">
+      <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+      Cargando usuarios…
+    </div>
+  } @else if (usuarios().length) {
+    <div class="table-responsive">
+      <table class="table table-striped table-hover align-middle">
+        <caption class="visually-hidden">
+          Lista de usuarios registrados
+        </caption>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Usuario</th>
+            <th scope="col">Rol</th>
+            <th scope="col">Edad</th>
+            <th scope="col">Nacimiento</th>
+            @if (auth.isAdmin()) {
+              <th scope="col" class="text-end">Acciones</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of usuarios(); track u.id) {
+            <tr>
+              <td>{{ u.id }}</td>
+              <td>{{ u.username }}</td>
+              <td>
+                <span class="badge" [class.text-bg-primary]="u.role === 'ADMIN'" [class.text-bg-secondary]="u.role !== 'ADMIN'">
+                  {{ u.role ?? '—' }}
+                </span>
+              </td>
+              <td>{{ u.userAge ?? '—' }}</td>
+              <td>{{ u.dateOfBirth ?? '—' }}</td>
+              @if (auth.isAdmin()) {
+                <td class="text-end text-nowrap">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary me-1"
+                    (click)="editar(u)"
+                    [attr.aria-label]="'Editar a ' + u.username"
+                  >
+                    <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger"
+                    (click)="eliminar(u)"
+                    [disabled]="guardando()"
+                    [attr.aria-label]="'Eliminar a ' + u.username"
+                  >
+                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                  </button>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (!error()) {
+    <p class="text-body-secondary">No hay usuarios registrados (el back responde 204).</p>
+  }
+</section>

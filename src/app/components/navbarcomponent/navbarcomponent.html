@@ -1,0 +1,41 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Navegación principal">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/usuarios">
+      <i class="fa-solid fa-shield-halved me-2" aria-hidden="true"></i>Spring JWT
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#menuPrincipal"
+      aria-controls="menuPrincipal"
+      aria-expanded="false"
+      aria-label="Abrir o cerrar el menú"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="menuPrincipal">
+      <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+        @if (auth.session(); as sesion) {
+          <a class="nav-link" routerLink="/usuarios" routerLinkActive="active">
+            <i class="fa-solid fa-users me-1" aria-hidden="true"></i>Usuarios
+          </a>
+          <span class="navbar-text text-light">
+            <i class="fa-solid fa-user me-1" aria-hidden="true"></i>{{ sesion.username }}
+            <span class="badge text-bg-info ms-1">{{ sesion.role ?? 'SIN ROL' }}</span>
+          </span>
+          <button type="button" class="btn btn-outline-light btn-sm" (click)="salir()">
+            <i class="fa-solid fa-right-from-bracket me-1" aria-hidden="true"></i>Salir
+          </button>
+        } @else {
+          <a class="nav-link" routerLink="/login" routerLinkActive="active">
+            <i class="fa-solid fa-right-to-bracket me-1" aria-hidden="true"></i>Iniciar sesión
+          </a>
+          <a class="nav-link" routerLink="/registro" routerLinkActive="active">
+            <i class="fa-solid fa-user-plus me-1" aria-hidden="true"></i>Registrarse
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+</nav>
